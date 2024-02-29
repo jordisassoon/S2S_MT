@@ -32,12 +32,16 @@ To evaluate synthesized speech translations with standard automatic MT metrics, 
 
 Previous work has evaluated using ASR and BLEU only [14] and have experiments with high-resource languages with standardized orthographies only; however, language dialects often have non-standardized orthographies which we show disproportionately affect word-level metrics like BLEU. With this in mind, we also compare two character-level MT metrics. chrF [15] computes F1-score of character n-grams, while character-level BLEU (charBLEU) computes BLEU on character rather than word sequences. We use SacreBLEU [16] to calculate both BLEU and chrF scores.
 
+-> get transcription with already pretrained models of outputs and predicted outputs and compare them with BLEU, chrF and charBLEU.
+
 
 Reference Speech: Mel-Cepstral Distortion (MCD)
 
 https://github.com/MattShannon/mcd
 
 https://pypi.org/project/pymcd/
+
+-> metric directly on audios
 
 
 Try to reproduce the results of this paper ??
