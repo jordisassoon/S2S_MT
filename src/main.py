@@ -27,7 +27,7 @@ def main(args):
     print(translated_text)
 
     translated_audio = text_to_speech(translated_text)
-    scipy.io.wavfile.write("out.wav", rate=sampling_rate, data=translated_audio)
+    scipy.io.wavfile.write("out.wav", rate=sampling_rate, data=translated_audio[0].detach().numpy())
 
 
 if __name__ == "__main__":
