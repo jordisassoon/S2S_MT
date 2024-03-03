@@ -37,9 +37,7 @@ Previous work has evaluated using ASR and BLEU only [14] and have experiments wi
 
 Reference Speech: Mel-Cepstral Distortion (MCD)
 
-https://github.com/MattShannon/mcd
-
-https://pypi.org/project/pymcd/
+https://github.com/chenqi008/pymcd
 
 -> metric directly on audios
 
@@ -62,6 +60,7 @@ torch
 scipy
 transformers
 datasets
+evaluate
 soundfile
 librosa
 SentencePiece

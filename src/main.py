@@ -7,6 +7,8 @@ from models.STT import SpeechToText
 from models.MT import MachineTranslation
 from models.TTS import TextToSpeech
 
+from metrics import compute_metrics
+
 
 def main(args):
     dataset = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
@@ -26,8 +28,12 @@ def main(args):
     translated_text = machine_translation(extracted_text)
     print(translated_text)
 
-    translated_audio = text_to_speech(translated_text)
-    scipy.io.wavfile.write("out.wav", rate=sampling_rate, data=translated_audio[0].detach().numpy())
+    translated_audio = text_to_speech(translated_text)[0].detach().numpy()
+    scipy.io.wavfile.write("out.wav", rate=sampling_rate, data=translated_audio)
+
+    #print(compute_metrics(outputs, translated_audio, device))
+
+
 
 
 if __name__ == "__main__":
