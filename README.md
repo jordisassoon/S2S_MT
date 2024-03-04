@@ -14,6 +14,8 @@ which models we used/tried (why?)
 # Datasets
 which datasets (why?)
 
+-> need datasets with input audio and labels (audio and text of translation)
+
 https://arxiv.org/abs/2211.04508 (https://github.com/facebookresearch/fairseq/tree/ust/examples/speech_matrix)
 https://aclanthology.org/N19-1202.pdf (should be here : https://ict.fbk.eu/must-c/   but I don't find)
 https://arxiv.org/abs/2201.03713 (https://github.com/google-research-datasets/cvss)
@@ -24,6 +26,8 @@ how we evaluate and the results
 
 https://arxiv.org/pdf/2110.13877.pdf
 
+BLEU, charBLEU, chrF, MCD
+
 Reference Text: ASR Transcription with MT Metrics
 
 For applications combining translation with synthesis such as speech-to-speech (S2S) or text-to-speech translation (T2S), previous work has exclusively transcribed synthesized speech with ASR to evaluate with the text-based metric BLEU [8], [11], [12], in part due to the absence of datasets with parallel speech.
@@ -33,7 +37,6 @@ To evaluate synthesized speech translations with standard automatic MT metrics, 
 Previous work has evaluated using ASR and BLEU only [14] and have experiments with high-resource languages with standardized orthographies only; however, language dialects often have non-standardized orthographies which we show disproportionately affect word-level metrics like BLEU. With this in mind, we also compare two character-level MT metrics. chrF [15] computes F1-score of character n-grams, while character-level BLEU (charBLEU) computes BLEU on character rather than word sequences. We use SacreBLEU [16] to calculate both BLEU and chrF scores.
 
 -> get transcription with already pretrained models of outputs and predicted outputs and compare them with BLEU, chrF and charBLEU.
-
 
 Reference Speech: Mel-Cepstral Distortion (MCD)
 
