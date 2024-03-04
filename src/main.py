@@ -31,7 +31,14 @@ def main(args):
     translated_audio = text_to_speech(translated_text)[0].detach().numpy()
     scipy.io.wavfile.write("out.wav", rate=sampling_rate, data=translated_audio)
 
-    #print(compute_metrics(outputs, translated_audio, device))
+    # Test of metrics
+    outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
+    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, device)
+
+    print("BLEU score :", bleu)
+    print("charBLEU score :", charbleu)
+    print("chrF score :", chrf)
+    print("mcd score :", mcd)
 
 
 

@@ -8,7 +8,10 @@ def compute_metrics(outputs, predictions, device):
     # Returns transcripts of predicted outputs
     pip = pipeline("automatic-speech-recognition", model="openai/whisper-base", tokenizer="openai/whisper-base", device=device)
     # For now we translate from english to french
-    pred = pip(predictions, generate_kwargs = {"task":"transcribe", "language":"<|fr|>"} )['text']
+    pred = [pip(predictions, generate_kwargs = {"task":"transcribe", "language":"<|fr|>"} )['text']]
+
+    print("Real translation :", outputs)
+    print("Predicted translation :", pred)
 
     # BLEU and charBLEU scores
     bleu, charbleu = compute_BLEU(outputs, pred)
