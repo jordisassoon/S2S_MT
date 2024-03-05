@@ -33,7 +33,7 @@ def main(args):
 
     # Test of metrics
     outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
-    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, device)
+    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "real_out.wav", "out.wav", device)
 
     print("BLEU score :", bleu)
     print("charBLEU score :", charbleu)

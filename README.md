@@ -64,6 +64,7 @@ scipy
 transformers
 datasets
 evaluate
+pymcd
 soundfile
 librosa
 SentencePiece
