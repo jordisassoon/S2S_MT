@@ -5,7 +5,6 @@ datasets
 evaluate
 soundfile
 librosa
-SentencePiece
 tqdm
 dtw
 numpy
