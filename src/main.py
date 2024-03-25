@@ -34,17 +34,11 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
         # Speech to text
         extracted_text = S2T(inputs, sampling_rate)
 
-        print("Text was extracted")
-
         # Machine translation
         translated_text = MT(extracted_text)
 
-        print("Text was translated")
-
         # Text to speech
         translated_audio = [audio.detach().numpy() for audio in T2S(translated_text)]
-
-        print("Text was read")
 
         # TODO:
         # Save audio translations
@@ -65,8 +59,6 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
 
 
 def main(args):
-    # TODO:
-    # Replace this with a custom loaded dataset
     dataset = load_dataset(
         "google/cvss", "cvss_c", languages=["fr"], split="validation"
     )
