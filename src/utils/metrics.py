@@ -1,7 +1,9 @@
 import evaluate
 from transformers import pipeline
 
-# from pymcd.mcd import Calculate_MCD
+import librosa
+from dtw import dtw
+import numpy as np
 
 
 # Utility functions
@@ -33,14 +35,14 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
     chrf = compute_chrf(outputs, pred)
 
     # MCD
-    # mcd = compute_MCD(outputs_files, predictions_files)
+    mcd = compute_MCD(outputs_files, predictions_files)
 
-    return bleu, charbleu, chrf  # , mcd
+    return bleu, charbleu, chrf, mcd
 
 
 # Metrics on transcripts
 def compute_BLEU(outputs, predictions):
-    # computes BLEU and charBLEU
+    # Computes BLEU and charBLEU
     sacrebleu = evaluate.load("sacrebleu")
     bleu = sacrebleu.compute(
         predictions=predictions, references=outputs, lowercase=True
@@ -53,7 +55,7 @@ def compute_BLEU(outputs, predictions):
 
 
 def compute_chrf(outputs, predictions):
-    # computes chrF
+    # Computes chrF
     chrf = evaluate.load("chrf")
     chrf_score = chrf.compute(
         predictions=predictions, references=outputs, lowercase=True
@@ -63,6 +65,29 @@ def compute_chrf(outputs, predictions):
 
 # Metrics on audios
 def compute_MCD(outputs, predictions):
-    # computes MCD
-    mcd_toolbox = Calculate_MCD(MCD_mode="plain")
-    return mcd_toolbox.calculate_mcd(outputs, predictions)
+    # Load audios
+    sr = 16000
+    original_audio, _ = librosa.load(outputs, sr=sr)
+    synthesized_audio, _ = librosa.load(predictions, sr=sr)
+
+    # Extract MFCC features
+    original_mfcc = librosa.feature.mfcc(y = original_audio, sr=sr)
+    synthesized_mfcc = librosa.feature.mfcc(y = synthesized_audio, sr=sr)
+
+    # Align the MFCC features using DTW
+    _, _, _, path = dtw(original_mfcc.T, synthesized_mfcc.T, dist=lambda x, y: np.linalg.norm(x - y, ord=1))
+
+    # Select aligned frames
+    aligned_original_mfcc = original_mfcc[:, path[0]]
+    aligned_synthesized_mfcc = synthesized_mfcc[:, path[1]]
+
+    # Compute the Euclidean distance between aligned frames
+    distances = np.sqrt(2 * np.sum((aligned_original_mfcc - aligned_synthesized_mfcc) ** 2, axis=0))
+
+    # Compute the mean distance
+    mean_distance = np.mean(distances)
+
+    # Compute MCD
+    mcd = (10 / np.log(10)) * mean_distance
+
+    return mcd

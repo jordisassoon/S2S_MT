@@ -46,8 +46,7 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
 
         # Compute metrics of the batch
         outputs = [sample["text"] for sample in batch]
-        # bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
-        bleu, charbleu, chrf = compute_metrics(
+        bleu, charbleu, chrf, mcd = compute_metrics(
             outputs, translated_audio, "./real_out.wav", "./out.wav", args.device
         )
 
@@ -55,7 +54,7 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
         print("BLEU score :", bleu)
         print("charBLEU score :", charbleu)
         print("chrF score :", chrf)
-        # print("mcd score :", mcd)
+        print("mcd score :", mcd)
 
 
 def main(args):
