@@ -85,7 +85,7 @@ Previous work has evaluated using ASR and BLEU only and have experiments with hi
 
 Mel Cepstral Distortion (MCD) measures the difference between two sets of Mel Cepstral Coefficients (MCC). MCC are a set of coefficients derived from Mel-frequency cepstral analysis, a technique that captures the perceptually relevant characteristics of speech signals. MCD is computed by aligning the MCC vectors of two speech signals, typically using Dynamic Time Warping (DTW), and then calculating the Euclidean distance between corresponding pairs of aligned vectors. Lower MCD values indicate better similarity between the original and synthesized speech.
 
-Here is how to compute MCD between two audios $y and \hat{y}$ [3, 4] : 
+Here is how to compute MCD between two audios $y$ and $\hat{y}$ [3, 4] : 
 
 $$MCD(y, \hat{y}) = \frac{10}{\ln(10)} \cdot \frac{1}{N} \sum_{n=0}^{N-1} \sqrt{2 \sum_{t=1}^{T} ||y_{t,n} - \hat{y}_{t,n}||}$$
 
