@@ -12,7 +12,7 @@ class GenericSTT(nn.Module):
 
     def forward(self, inputs, sampling_rate):
         input_features = self.processor(
-            inputs, sampling_rate=sampling_rate, return_tensors="pt"
+            inputs, sampling_rate=sampling_rate, return_tensors="pt", padding=True
         ).input_features
         generated_ids = self.model.generate(inputs=input_features)
         transcriptions = self.processor.batch_decode(

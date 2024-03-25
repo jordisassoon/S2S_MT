@@ -9,39 +9,49 @@ from models.TTS.VITS import VITS
 from utils.metrics import compute_metrics
 from utils.save import save_batch
 
+from tqdm import tqdm
+import librosa
 
-def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=32):
+
+def sample_audio(audio):
+    speech_array, sampling_rate = librosa.load(audio["file"], sr=16_000)
+    return speech_array
+
+
+def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
     if len(dataset) < batch_size:
         batch_size = len(dataset)
 
     # TODO:
     # Scores over all the batches
 
-    for b, i in enumerate(range(0, len(dataset), batch_size)):
-        batch = dataset[i : i + batch_size]
+    for b, i in tqdm(enumerate(range(0, len(dataset), batch_size))):
+        batch = [dataset[index] for index in range(i, i + batch_size)]
 
-        # TODO:
-        # TO MODIFY GIVEN THE ORGANIZATION OF OUR DATASETS
-        inputs = [item["audio"]["array"] for item in batch]
+        # Batch of inputs
+        inputs = [sample_audio(sample) for sample in batch]
 
         # Speech to text
         extracted_text = S2T(inputs, sampling_rate)
 
+        print("Text was extracted")
+
         # Machine translation
         translated_text = MT(extracted_text)
+
+        print("Text was translated")
 
         # Text to speech
         translated_audio = [audio.detach().numpy() for audio in T2S(translated_text)]
 
+        print("Text was read")
+
+        # TODO:
         # Save audio translations
         save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=translated_audio)
 
         # Compute metrics of the batch
-        outputs = [
-            [
-                "Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"
-            ]
-        ]
+        outputs = [sample["text"] for sample in batch]
         # bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
         bleu, charbleu, chrf = compute_metrics(
             outputs, translated_audio, "./real_out.wav", "./out.wav", args.device
@@ -92,7 +102,7 @@ def main(args):
     # Process in batches
     process_batches(
         dataset,
-        dataset[0]["audio"]["sampling_rate"],
+        16000,  # model's sampling rate
         speech_to_text,
         machine_translation,
         text_to_speech,

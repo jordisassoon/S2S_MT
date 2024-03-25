@@ -9,6 +9,6 @@ class VITS(nn.Module):
         self.model = VitsModel.from_pretrained(model).to(device)
 
     def forward(self, inputs):
-        input_features = self.tokenizer(inputs, return_tensors="pt")
+        input_features = self.tokenizer(inputs, return_tensors="pt", padding=True)
         output = self.model(**input_features).waveform
         return output

@@ -9,7 +9,7 @@ class AutoMT(nn.Module):
         self.model = AutoModelForSeq2SeqLM.from_pretrained(model).to(device)
 
     def forward(self, inputs):
-        model_inputs = self.tokenizer(inputs, return_tensors="pt")
+        model_inputs = self.tokenizer(inputs, return_tensors="pt", padding=True)
         generated_tokens = self.model.generate(**model_inputs)
         translations = self.tokenizer.batch_decode(
             generated_tokens, skip_special_tokens=True
