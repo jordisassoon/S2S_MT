@@ -87,7 +87,9 @@ Mel Cepstral Distortion (MCD) measures the difference between two sets of Mel Ce
 
 Here is how to compute MCD [3, 4] : 
 
-MCD(y, ^y) = \frac{10}{\ln(10)} \cdot \frac{1}{N} \sum_{n=0}^{N-1} \sqrt{2 \sum_{t=1}^{T} ||y_{t,n} - \hat{y}_{t,n}||}
+$$MCD(y, ^y) = \frac{10}{\ln(10)} \cdot \frac{1}{N} \sum_{n=0}^{N-1} \sqrt{2 \sum_{t=1}^{T} ||y_{t,n} - \hat{y}_{t,n}||}$$
+
+-> the voice, intonnation, lentgh... affect the results. Example : two translations (same intonation from the model) 264.38 dB and the real output (with my voice and intonation) with a translation 1039.26
 
 ## References
 
