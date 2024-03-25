@@ -14,7 +14,7 @@ import librosa
 
 
 def sample_audio(audio):
-    speech_array, sampling_rate = librosa.load(audio["file"], sr=16_000)
+    speech_array, _ = librosa.load(audio["file"], sr=16_000)
     return speech_array
 
 
