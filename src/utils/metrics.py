@@ -1,6 +1,6 @@
 import evaluate
 from transformers import pipeline
-from pymcd.mcd import Calculate_MCD
+#from pymcd.mcd import Calculate_MCD
 
 # Utility functions
 def compute_metrics(outputs, predictions, outputs_files, predictions_files, device):
@@ -9,7 +9,7 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
     # Returns transcripts of predicted outputs
     pip = pipeline("automatic-speech-recognition", model="openai/whisper-base", tokenizer="openai/whisper-base", device=device)
     # For now we translate from english to french
-    pred = [pip(predictions, generate_kwargs={"task":"transcribe", "language":"<|fr|>"})['text']]
+    pred = [item['text'] for item in pip(predictions, generate_kwargs={"task":"transcribe", "language":"<|fr|>"})]
 
     print("Real translation :", outputs)
     print("Predicted translation :", pred)

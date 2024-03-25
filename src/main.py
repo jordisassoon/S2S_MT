@@ -10,12 +10,55 @@ from utils.metrics import compute_metrics
 from utils.save import save_batch
 
 
+def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size = 32):
+    if len(dataset) < batch_size :
+        batch_size = len(dataset)
+    
+    # TODO:
+    # Scores over all the bacthes
+
+    for b, i in enumerate(range(0, len(dataset), batch_size)):
+        batch = dataset[i:i+batch_size]
+
+        # TODO:
+        # TO MODIFY GIVEN THE ORGANIZATION OF OUR DATASETS
+        inputs = [item["audio"]["array"] for item in batch]
+
+
+        # Speech to text
+        extracted_text = S2T(inputs, sampling_rate)
+
+        # Machine translation
+        translated_text = MT(extracted_text)
+
+        # Text to speech
+        translated_audio = [audio.detach().numpy() for audio in T2S(translated_text)]
+
+        # Save audio translations
+        save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=translated_audio)
+
+
+        # Compute metrics of the batch
+        outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
+        #bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
+        bleu, charbleu, chrf = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
+
+        print('Batch', b)
+        print("BLEU score :", bleu)
+        print("charBLEU score :", charbleu)
+        print("chrF score :", chrf)
+        #print("mcd score :", mcd)
+
+
+
+
 def main(args):
     # TODO:
     # Replace this with a custom loaded dataset
     dataset = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
-    inputs = dataset[0]["audio"]["array"]
-    sampling_rate = dataset[0]["audio"]["sampling_rate"]
+    dataset = [dataset[0]]
+
+
 
     # TODO:
     # Add more models!
@@ -25,7 +68,7 @@ def main(args):
         speech_to_text = None
 
     if args.mt_model == "m2m":
-        machine_translation = M2M100(model="facebook/m2m100_418M", device=args.device, tgt_lan=args.tgt_lan)
+        machine_translation = M2M100(model="facebook/m2m100_418M", device=args.device, src_lang = args.src_lan, tgt_lan=args.tgt_lan)
     elif args.mt_model == "hel":
         machine_translation = AutoMT(model="Helsinki-NLP/opus-mt-en-fr", device=args.device)
     else:
@@ -36,28 +79,15 @@ def main(args):
     else:
         text_to_speech = None
 
-    # TODO:
+
+
+
     # Process in batches
-    extracted_text = speech_to_text(inputs, sampling_rate)
-    print(extracted_text)
+    process_batches(dataset, dataset[0]["audio"]["sampling_rate"], speech_to_text, machine_translation, text_to_speech, args)
 
-    translated_text = machine_translation(extracted_text)
-    print(translated_text)
 
-    translated_audio = text_to_speech(translated_text)[0].detach().numpy()
 
-    # TODO:
-    # Make a saving tool
-    save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=[translated_audio])
 
-    # Test of metrics
-    outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
-    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
-
-    print("BLEU score :", bleu)
-    print("charBLEU score :", charbleu)
-    print("chrF score :", chrf)
-    print("mcd score :", mcd)
 
 
 if __name__ == "__main__":
