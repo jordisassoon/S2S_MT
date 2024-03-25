@@ -1,5 +1,47 @@
 # S2S_MT
 
+This repository contains the code referring to our project for TPT-...
+The README contains information on how to run the code, and general descriptions of the methods and datasets we used, and the results we got.
+
+## Requirements
+
+Recommended OS: Linux or Windows 11
+
+### _Make a requirements file_
+
+## Data and File Structure
+
+## Running the Code
+
+To run the pipeline, these are the parameters:
+
+```
+--stt_model = Abbreviated model for STT (see abbreviation table)
+--mt_model = Abbreviated model for MT (see abbreviation table)
+--tts_model = Abbreviated model for TTS (see abbreviation table)
+--src_lan = Abbreviated name of the source language ('en' for English, 'fr' for French)
+--tgt_lan = Abbreviated name of the source language ('en' for English, 'fr' for French)
+--data_dir = directory containing the audio files and possibly the ground truth transcriptions
+--device = which device the models on
+--out_dir = filepath to save the outputs to
+```
+
+An example command to run it:
+
+```
+python main.py \
+--stt_model=fb-s2t-small \
+--mt_model=m2m \
+--tts_model=fb-tts-fra \
+--src_lan=en \
+--tgt_lan=fr \
+--data_dir=NoneForNow \
+--device=['cuda':0] \
+--out_dir=out \
+```
+
+# Other stuff
+
 presentation of the project and what we do/ want to do
 
 https://huggingface.co/learn/audio-course/chapter7/speech-to-speech
@@ -8,10 +50,14 @@ we can try STT + MT + TTS  and just STTT + TTS  (recently some papers focused on
 
 maybe we can try on one "common" language and one "rare" (with less data available) and compare the results
 
-# Models
+## Models
 which models we used/tried (why?)
+list of model names:
+- fb-s2t-small = facebook/s2t-small-librispeech-asr
+- m2m = facebook/m2m100_418M
+- fb-tts-fra = facebook/mms-tts-fra
 
-# Datasets
+## Datasets
 which datasets (why?)
 
 -> need datasets with input audio and labels (audio and text of translation)
@@ -21,7 +67,7 @@ https://aclanthology.org/N19-1202.pdf (should be here : https://ict.fbk.eu/must-
 https://arxiv.org/abs/2201.03713 (https://github.com/google-research-datasets/cvss)
 https://arxiv.org/abs/2204.10593 (https://github.com/pedrodke/libris2s)
 
-# Evaluation
+## Evaluation
 how we evaluate and the results
 
 https://arxiv.org/pdf/2110.13877.pdf
@@ -44,27 +90,4 @@ https://github.com/chenqi008/pymcd
 
 -> metric directly on audios
 
-
 Try to reproduce the results of this paper ??
-
-
-
-## Organization
-
-organization of the code
-
-## How to run it
-
-libraries to install and explaination of how to run it
-
-libraries : (maybe make a requirements file)
-
-torch
-scipy
-transformers
-datasets
-evaluate
-pymcd
-soundfile
-librosa
-SentencePiece

@@ -2,9 +2,9 @@ import torch.nn as nn
 from transformers import VitsModel, AutoTokenizer
 
 
-class TextToSpeech(nn.Module):
+class VITS(nn.Module):
     def __init__(self, model, device):
-        super(TextToSpeech, self).__init__()
+        super(VITS, self).__init__()
         self.tokenizer = AutoTokenizer.from_pretrained(model)
         self.model = VitsModel.from_pretrained(model).to(device)
 

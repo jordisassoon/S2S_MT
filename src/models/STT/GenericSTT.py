@@ -2,9 +2,9 @@ import torch.nn as nn
 from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
 
 
-class SpeechToText(nn.Module):
+class GenericSTT(nn.Module):
     def __init__(self, model, device):
-        super(SpeechToText, self).__init__()
+        super(GenericSTT, self).__init__()
         self.processor = Speech2TextProcessor.from_pretrained(model)
         self.model = Speech2TextForConditionalGeneration.from_pretrained(model).to(
             device

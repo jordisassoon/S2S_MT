@@ -2,9 +2,9 @@ import torch.nn as nn
 from transformers import M2M100ForConditionalGeneration, M2M100Tokenizer
 
 
-class MachineTranslation(nn.Module):
+class M2M100(nn.Module):
     def __init__(self, model, src_lang, tgt_lan, device):
-        super(MachineTranslation, self).__init__()
+        super(M2M100, self).__init__()
         self.tokenizer = M2M100Tokenizer.from_pretrained(model)
         self.model = M2M100ForConditionalGeneration.from_pretrained(model).to(device)
         self.tgt_lan = tgt_lan
