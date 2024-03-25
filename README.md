@@ -56,15 +56,11 @@ list of model names:
 
 ## Dataset
 
--> need datasets with input audio and labels (audio and text of translation)
+For the dataset, since we use metrics based on the translated audio and the transcribed text (see next section), we had to use a dataset with audios in different languages (input and translation) and the transcription of the translation. We found the Common Voicebased Speech-to-Speech (CVSS) translation corpus [1] which is a massively multilingual-to-English speech-to-speech translation corpus, covering sentence-level parallel speech-to-speech translation pairs from 21 languages into English. It also contains  normalized translation text matching the pronunciation in the translation speech.
 
--> get transcription with already pretrained models of outputs and predicted outputs and compare them with BLEU, chrF and charBLEU.
+The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. We use translation speech in English, synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
 
-CVSS [1] : presentation of dataset, organization and analysis ?
-
--> availalble on hugging face
-
-https://arxiv.org/abs/2201.03713 (https://github.com/google-research-datasets/cvss)
+-> organization and analysis ?
 
 
 ## Evaluation
@@ -100,3 +96,5 @@ $$MCD(y, \hat{y}) = \frac{10}{\ln(10)} \cdot \frac{1}{N} \sum_{n=0}^{N-1} \sqrt{
 [3] Haque, Albert et al. “Conditional End-to-End Audio Transforms.” Interspeech (2018), https://doi.org/10.48550/arXiv.1804.00047.
 
 [4] Kominek, John et al. “Synthesizer voice quality of new languages calibrated with mean mel cepstral distortion.” Workshop on Spoken Language Technologies for Under-resourced Languages (2008).
+
+[5] Ardila, Rosana et al. “Common Voice: A Massively-Multilingual Speech Corpus.” Proceedings of the 12th Conference on Language Resources and Evaluation (2020), https://doi.org/10.48550/arXiv.1912.06670.
