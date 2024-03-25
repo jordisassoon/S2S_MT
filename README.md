@@ -30,14 +30,14 @@ An example command to run it:
 
 ```
 python main.py \
---stt_model=fb-s2t-small \
---mt_model=m2m \
---tts_model=fb-tts-fra \
---src_lan=en \
---tgt_lan=fr \
---data_dir=NoneForNow \
---device=['cuda':0] \
---out_dir=out \
+    --stt_model=fb-s2t-small \
+    --mt_model=m2m \
+    --tts_model=fb-tts-fra \
+    --src_lan=en \
+    --tgt_lan=fr \
+    --data_dir=NoneForNow \
+    --device=cuda:0 \
+    --out_dir=out
 ```
 
 # Other stuff

@@ -3,6 +3,7 @@ from datasets import load_dataset
 
 from models.STT.GenericSTT import GenericSTT
 from models.MT.M2M100 import M2M100
+from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
 
 from utils.metrics import compute_metrics
@@ -24,7 +25,9 @@ def main(args):
         speech_to_text = None
 
     if args.mt_model == "m2m":
-        machine_translation = M2M100(model="facebook/m2m100_418M", device=args.device, src_lang=args.src_lan, tgt_lan=args.tgt_lan)
+        machine_translation = M2M100(model="facebook/m2m100_418M", device=args.device, tgt_lan=args.tgt_lan)
+    elif args.mt_model == "hel":
+        machine_translation = AutoMT(model="Helsinki-NLP/opus-mt-en-fr", device=args.device)
     else:
         machine_translation = None
 
@@ -49,7 +52,7 @@ def main(args):
 
     # Test of metrics
     outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
-    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "real_out.wav", "out.wav", args.device)
+    bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
 
     print("BLEU score :", bleu)
     print("charBLEU score :", charbleu)

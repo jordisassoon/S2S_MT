@@ -9,7 +9,7 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
     # Returns transcripts of predicted outputs
     pip = pipeline("automatic-speech-recognition", model="openai/whisper-base", tokenizer="openai/whisper-base", device=device)
     # For now we translate from english to french
-    pred = [pip(predictions, generate_kwargs = {"task":"transcribe", "language":"<|fr|>"} )['text']]
+    pred = [pip(predictions, generate_kwargs={"task":"transcribe", "language":"<|fr|>"})['text']]
 
     print("Real translation :", outputs)
     print("Predicted translation :", pred)
@@ -21,9 +21,9 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
     chrf = compute_chrf(outputs, pred)
 
     # MCD
-    mcd = compute_MCD(outputs_files, predictions_files)
+    # mcd = compute_MCD(outputs_files, predictions_files)
 
-    return bleu, charbleu, chrf, mcd
+    return bleu, charbleu, chrf#, mcd
 
 # Metrics on transcripts
 def compute_BLEU(outputs, predictions):
