@@ -1,15 +1,27 @@
 import evaluate
 from transformers import pipeline
-#from pymcd.mcd import Calculate_MCD
+
+# from pymcd.mcd import Calculate_MCD
+
 
 # Utility functions
 def compute_metrics(outputs, predictions, outputs_files, predictions_files, device):
     # Compute all the metrics based on the outputs and the predicted outputs
-    
+
     # Returns transcripts of predicted outputs
-    pip = pipeline("automatic-speech-recognition", model="openai/whisper-base", tokenizer="openai/whisper-base", device=device)
+    pip = pipeline(
+        "automatic-speech-recognition",
+        model="openai/whisper-base",
+        tokenizer="openai/whisper-base",
+        device=device,
+    )
     # For now we translate from english to french
-    pred = [item['text'] for item in pip(predictions, generate_kwargs={"task":"transcribe", "language":"<|fr|>"})]
+    pred = [
+        item["text"]
+        for item in pip(
+            predictions, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
+        )
+    ]
 
     print("Real translation :", outputs)
     print("Predicted translation :", pred)
@@ -23,23 +35,32 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
     # MCD
     # mcd = compute_MCD(outputs_files, predictions_files)
 
-    return bleu, charbleu, chrf#, mcd
+    return bleu, charbleu, chrf  # , mcd
+
 
 # Metrics on transcripts
 def compute_BLEU(outputs, predictions):
     # computes BLEU and charBLEU
     sacrebleu = evaluate.load("sacrebleu")
-    bleu = sacrebleu.compute(predictions=predictions, references=outputs, lowercase = True)
+    bleu = sacrebleu.compute(
+        predictions=predictions, references=outputs, lowercase=True
+    )
 
-    charbleu = sacrebleu.compute(predictions=predictions, references=outputs, tokenize = "char", lowercase = True)
-    return bleu['score'], charbleu['score']
-    
+    charbleu = sacrebleu.compute(
+        predictions=predictions, references=outputs, tokenize="char", lowercase=True
+    )
+    return bleu["score"], charbleu["score"]
+
+
 def compute_chrf(outputs, predictions):
     # computes chrF
     chrf = evaluate.load("chrf")
-    chrf_score = chrf.compute(predictions=predictions, references=outputs, lowercase = True)
-    return chrf_score['score']
-    
+    chrf_score = chrf.compute(
+        predictions=predictions, references=outputs, lowercase=True
+    )
+    return chrf_score["score"]
+
+
 # Metrics on audios
 def compute_MCD(outputs, predictions):
     # computes MCD

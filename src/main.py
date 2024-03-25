@@ -10,20 +10,19 @@ from utils.metrics import compute_metrics
 from utils.save import save_batch
 
 
-def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size = 32):
-    if len(dataset) < batch_size :
+def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=32):
+    if len(dataset) < batch_size:
         batch_size = len(dataset)
-    
+
     # TODO:
-    # Scores over all the bacthes
+    # Scores over all the batches
 
     for b, i in enumerate(range(0, len(dataset), batch_size)):
-        batch = dataset[i:i+batch_size]
+        batch = dataset[i : i + batch_size]
 
         # TODO:
         # TO MODIFY GIVEN THE ORGANIZATION OF OUR DATASETS
         inputs = [item["audio"]["array"] for item in batch]
-
 
         # Speech to text
         extracted_text = S2T(inputs, sampling_rate)
@@ -37,40 +36,51 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size = 32)
         # Save audio translations
         save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=translated_audio)
 
-
         # Compute metrics of the batch
-        outputs = [["Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"]]
-        #bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
-        bleu, charbleu, chrf = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
+        outputs = [
+            [
+                "Monsieur Kilter est l'apôtre des classes moyennes et nous sommes heureux d'accueillir son évangile"
+            ]
+        ]
+        # bleu, charbleu, chrf, mcd = compute_metrics(outputs, translated_audio, "./real_out.wav", "./out.wav", args.device)
+        bleu, charbleu, chrf = compute_metrics(
+            outputs, translated_audio, "./real_out.wav", "./out.wav", args.device
+        )
 
-        print('Batch', b)
+        print("Batch", b)
         print("BLEU score :", bleu)
         print("charBLEU score :", charbleu)
         print("chrF score :", chrf)
-        #print("mcd score :", mcd)
-
-
+        # print("mcd score :", mcd)
 
 
 def main(args):
     # TODO:
     # Replace this with a custom loaded dataset
-    dataset = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation")
-    dataset = [dataset[0]]
-
-
+    dataset = load_dataset(
+        "google/cvss", "cvss_c", languages=["fr"], split="validation"
+    )
 
     # TODO:
     # Add more models!
     if args.stt_model == "fb-s2t-small":
-        speech_to_text = GenericSTT(model="facebook/s2t-small-librispeech-asr", device=args.device)
+        speech_to_text = GenericSTT(
+            model="facebook/s2t-small-librispeech-asr", device=args.device
+        )
     else:
         speech_to_text = None
 
     if args.mt_model == "m2m":
-        machine_translation = M2M100(model="facebook/m2m100_418M", device=args.device, src_lang = args.src_lan, tgt_lan=args.tgt_lan)
+        machine_translation = M2M100(
+            model="facebook/m2m100_418M",
+            device=args.device,
+            src_lang=args.src_lan,
+            tgt_lan=args.tgt_lan,
+        )
     elif args.mt_model == "hel":
-        machine_translation = AutoMT(model="Helsinki-NLP/opus-mt-en-fr", device=args.device)
+        machine_translation = AutoMT(
+            model="Helsinki-NLP/opus-mt-en-fr", device=args.device
+        )
     else:
         machine_translation = None
 
@@ -79,15 +89,15 @@ def main(args):
     else:
         text_to_speech = None
 
-
-
-
     # Process in batches
-    process_batches(dataset, dataset[0]["audio"]["sampling_rate"], speech_to_text, machine_translation, text_to_speech, args)
-
-
-
-
+    process_batches(
+        dataset,
+        dataset[0]["audio"]["sampling_rate"],
+        speech_to_text,
+        machine_translation,
+        text_to_speech,
+        args,
+    )
 
 
 if __name__ == "__main__":
@@ -95,20 +105,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--stt_model", type=str, help="name of the STT huggingface model"
     )
-    parser.add_argument(
-        "--mt_model", type=str, help="name of the MT huggingface model"
-    )
+    parser.add_argument("--mt_model", type=str, help="name of the MT huggingface model")
     parser.add_argument(
         "--tts_model", type=str, help="name of the TTS huggingface model"
     )
+    parser.add_argument("--src_lan", type=str, help="source language abbreviated")
+    parser.add_argument("--tgt_lan", type=str, help="target language abbreviated")
     parser.add_argument(
-        "--src_lan", type=str, help="source language abbreviated"
-    )
-    parser.add_argument(
-        "--tgt_lan", type=str, help="target language abbreviated"
-    )
-    parser.add_argument(
-        "--data_dir", type=str, metavar="DIR", help="directory containing the data"
+        "--data_dir", type=str, metavar="DIR", help="directory containing the audios"
     )
     parser.add_argument(
         "--device",
