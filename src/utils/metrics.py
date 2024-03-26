@@ -17,16 +17,10 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
         tokenizer="openai/whisper-base",
         device=device,
     )
-    # For now we translate from french to english
-    transcribed_translated_audio = [
-        item["text"]
-        for item in pip(
-            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|en|>"}
-        )
-    ]
-
-    print("Real translation :", target_text)
-    print("Predicted translation :", transcribed_translated_audio)
+    # For now we translate from english to french
+    transcribed_translated_audio = [pip(
+            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
+        )["text"]]
 
     # BLEU and charBLEU scores
     bleu, charbleu = compute_BLEU(target_text, transcribed_translated_audio)

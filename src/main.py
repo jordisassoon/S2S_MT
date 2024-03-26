@@ -7,7 +7,7 @@ from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
 
 from utils.metrics import compute_metrics
-from utils.save import save_batch
+from utils.save import save_wav
 
 from tqdm import tqdm
 import librosa
@@ -41,38 +41,33 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     # TODO:
     # Scores over all the instances
 
-    source = iter(common_voice)
+    target = iter(common_voice)
     count = 0
     for b in tqdm(range(len(cvss))):
         # Iterate through Common Voice
-        s = next(source, 'END')
+        s = next(target, 'END')
         if s == 'END':
             break
         
-        source_audio = np.array([librosa.resample(y = s['audio']['array'], orig_sr = 48000, target_sr = 16000)]) # Common Voice's sr to model's sr
-        source_text = np.array([s['sentence'].lower()])
-            
-        target = cvss[b]
-        target_audio = np.array([sample_audio(target)])
-        target_text = np.array([target['text']])
+        source = cvss[b]
+        source_audio = np.array([sample_audio(source)])
+        source_text = np.array([source['text']])
+
+        target_audio = np.array([librosa.resample(y = s['audio']['array'], orig_sr = 48000, target_sr = sampling_rate)])[0] # Common Voice's sr to model's sr
+        target_text = np.array([s['sentence'].lower()])
 
         # Speech to text
         extracted_text = S2T(source_audio, sampling_rate)
-        print('Extraction : ', extracted_text)
 
         # Machine translation
         translated_text = MT(extracted_text)
-        print('Translation : ', translated_text)
 
         # Text to speech
-        translated_audio = T2S(translated_text).detach().cpu().numpy()
-        print(translated_audio)
+        translated_audio = T2S(translated_text).detach().cpu().numpy()[0]
 
         # TODO:
         # Save audio translations
-        save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=translated_audio)
-        print(source_text)
-        print(target_text)
+        save_wav(out_dir=args.out_dir, out_name=s['audio']['path'][6:], rate=sampling_rate, data=translated_audio)
         # Compute metrics of the batch
         bleu, charbleu, chrf, mcd = compute_metrics(
             target_text, target_audio, translated_audio, args.device
@@ -84,6 +79,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         print("chrF score :", chrf)
         print("mcd score :", mcd)
 
+        count += 1
         break
 
 
