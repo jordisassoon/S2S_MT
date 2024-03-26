@@ -62,7 +62,7 @@ We had to combine the CVSS and the Common Voice datasets, by joining them on the
 
 - load CVSS as a Dataset with hugging face
 - load Common Voice as an Iterable Dataset (in streaming mode) with hugging face
-- to run the model : Iterate *batch_size* times through Common Voice and save the data in a tensor. Find the targets in CVSS and save them in a tensor. Run the model on the batch and print the scores. Save the scores in a list. Redo until end of the dataset.
+- to run the model : Iterate through Common Voice (so we have batches of 1) and save the data in a tensor. Find the source audio in CVSS and save it in a tensor. Run the model on the batch and print the scores. Save the scores in a list. Redo until end of the dataset. Average the scores.
 
 -> organization and analysis ?
 
