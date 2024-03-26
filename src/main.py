@@ -14,7 +14,7 @@ import librosa
 
 
 def sample_audio(audio):
-    speech_array, _ = librosa.load(audio["file"], sr=16_000)
+    speech_array, _ = librosa.load(audio["file"], sr=16000) # model's sampling rate
     return speech_array
 
 
@@ -59,7 +59,7 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
 
 def main(args):
     dataset = load_dataset(
-        "google/cvss", "cvss_c", languages=["fr"], split="validation"
+        "google/cvss", "cvss_c", languages=["fr"], split="validation", trust_remote_code=True
     )
 
     # TODO:
