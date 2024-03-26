@@ -56,9 +56,11 @@ list of model names:
 
 ## Dataset
 
-For the dataset, since we use metrics based on the translated audio and the transcribed text (see next section), we had to use a dataset with audios in different languages (input and translation) and the transcription of the translation. We found the Common Voicebased Speech-to-Speech (CVSS) translation corpus [1] which is a massively multilingual-to-English speech-to-speech translation corpus, covering sentence-level parallel speech-to-speech translation pairs from 21 languages into English. It also contains  normalized translation text matching the pronunciation in the translation speech.
+For the dataset, since we use metrics based on the translated audios and the transcriptions of the translations (see next section), we had to use a dataset with audios in different languages (input and translation) and the transcriptions. We found the Common Voicebased Speech-to-Speech (CVSS) translation corpus [1] which is a massively multilingual-to-English speech-to-speech translation corpus, covering sentence-level parallel speech-to-speech translation pairs from 21 languages into English. It also contains  normalized translation text matching the pronunciation in the translation speech.
 
-The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. We use translation speech in English, synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
+The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. The translation speech in English is synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
+
+We had to combine the CVSS and the Common Voice datasets to get the whole speech to speech corpus. Since both of them are available on Hugging Face with the same structure, we could easily load them. We then had to join the source and target files by their file names to have a big dataset with inputs, translaions and transcriptions.
 
 -> organization and analysis ?
 
