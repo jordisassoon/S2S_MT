@@ -7,8 +7,6 @@ The README contains information on how to run the code, and general descriptions
 
 Recommended OS: Linux or Windows 11
 
-### _Make a requirements file_
-
 ## Data and File Structure
 
 ## Running the Code
@@ -60,7 +58,11 @@ For the dataset, since we use metrics based on the translated audios and the tra
 
 The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. The translation speech in English is synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
 
-We had to combine the CVSS and the Common Voice datasets to get the whole speech to speech corpus. Since both of them are available on Hugging Face with the same structure, we could easily load them. We then had to join the source and target files by their file names to have a big dataset with inputs, translaions and transcriptions.
+We had to combine the CVSS and the Common Voice datasets, by joining them on the file names, to get the whole speech to speech corpus. Both of them are available on Hugging Face with the same structure, but we didn't have enough space to load both datasets. To overcome this problem, we decided to download CVSS and iterate through Common Voice thanks to the hugging face's 'streaming' parameter. 
+
+- load CVSS as a Dataset with hugging face
+- load Common Voice as an Iterable Dataset (in streaming mode) with hugging face
+- to run the model : Iterate *batch_size* times through Common Voice and save the data in a tensor. Find the targets in CVSS and save them in a tensor. Run the model on the batch and print the scores. Save the scores in a list. Redo until end of the dataset.
 
 -> organization and analysis ?
 
