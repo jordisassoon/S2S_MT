@@ -8,3 +8,5 @@ librosa
 tqdm
 dtw
 numpy
+SentencePiece
+sacrebleu

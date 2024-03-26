@@ -11,6 +11,9 @@ from utils.save import save_batch
 
 from tqdm import tqdm
 import librosa
+import torch
+from torch.utils.data import DataLoader
+import numpy as np
 
 from token_hf import token
 
@@ -20,36 +23,59 @@ def sample_audio(audio):
     return speech_array
 
 
-def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
-    if len(dataset) < batch_size:
-        batch_size = len(dataset)
+def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
+    # Load datasets
+    # Target, English
+    cvss = load_dataset(
+        "google/cvss", "cvss_c", languages=["fr"], split="validation", trust_remote_code=True
+    )
+    
+    # Source, French
+    common_voice = load_dataset(
+        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, streaming=True, token=token
+    )
+
+    if len(cvss) < batch_size:
+        batch_size = len(cvss)
 
     # TODO:
-    # Scores over all the batches
+    # Scores over all the instances
 
-    for b, i in tqdm(enumerate(range(0, len(dataset), batch_size))):
-        batch = [dataset[index] for index in range(i, i + batch_size)]
-
-        # Batch of inputs
-        inputs = [sample_audio(sample) for sample in batch]
+    source = iter(common_voice)
+    count = 0
+    for b in tqdm(range(len(cvss))):
+        # Iterate through Common Voice
+        s = next(source, 'END')
+        if s == 'END':
+            break
+        
+        source_audio = np.array([librosa.resample(y = s['audio']['array'], orig_sr = 48000, target_sr = 16000)]) # Common Voice's sr to model's sr
+        source_text = np.array([s['sentence'].lower()])
+            
+        target = cvss[b]
+        target_audio = np.array([sample_audio(target)])
+        target_text = np.array([target['text']])
 
         # Speech to text
-        extracted_text = S2T(inputs, sampling_rate)
+        extracted_text = S2T(source_audio, sampling_rate)
+        print('Extraction : ', extracted_text)
 
         # Machine translation
         translated_text = MT(extracted_text)
+        print('Translation : ', translated_text)
 
         # Text to speech
-        translated_audio = [audio.detach().numpy() for audio in T2S(translated_text)]
+        translated_audio = T2S(translated_text).detach().cpu().numpy()
+        print(translated_audio)
 
         # TODO:
         # Save audio translations
         save_batch(out_dir=args.out_dir, rate=sampling_rate, batch=translated_audio)
-
+        print(source_text)
+        print(target_text)
         # Compute metrics of the batch
-        outputs = [sample["text"] for sample in batch]
         bleu, charbleu, chrf, mcd = compute_metrics(
-            outputs, translated_audio, "./real_out.wav", "./out.wav", args.device
+            target_text, target_audio, translated_audio, args.device
         )
 
         print("Batch", b)
@@ -58,21 +84,10 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
         print("chrF score :", chrf)
         print("mcd score :", mcd)
 
+        break
+
 
 def main(args):
-    cvss = load_dataset(
-        "google/cvss", "cvss_c", languages=["fr"], split="validation", trust_remote_code=True
-    )
-    
-    common_voice = load_dataset(
-        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, streaming=True, token = token
-    )
-
-    print(cvss)
-    print(common_voice)
-    print(cvss[0])
-    print(next(iter(common_voice)))
-
     # TODO:
     # Add more models!
     if args.stt_model == "fb-s2t-small":
@@ -103,11 +118,10 @@ def main(args):
 
     # Process in batches
     process_batches(
-        dataset,
-        16000,  # model's sampling rate
         speech_to_text,
         machine_translation,
         text_to_speech,
+        16000,  # model's sampling rate
         args,
     )
 

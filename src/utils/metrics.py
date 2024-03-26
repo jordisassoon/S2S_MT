@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Utility functions
-def compute_metrics(outputs, predictions, outputs_files, predictions_files, device):
+def compute_metrics(target_text, target_audio, translated_audio, device):
     # Compute all the metrics based on the outputs and the predicted outputs
 
     # Returns transcripts of predicted outputs
@@ -17,25 +17,25 @@ def compute_metrics(outputs, predictions, outputs_files, predictions_files, devi
         tokenizer="openai/whisper-base",
         device=device,
     )
-    # For now we translate from english to french
-    pred = [
+    # For now we translate from french to english
+    transcribed_translated_audio = [
         item["text"]
         for item in pip(
-            predictions, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
+            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|en|>"}
         )
     ]
 
-    print("Real translation :", outputs)
-    print("Predicted translation :", pred)
+    print("Real translation :", target_text)
+    print("Predicted translation :", transcribed_translated_audio)
 
     # BLEU and charBLEU scores
-    bleu, charbleu = compute_BLEU(outputs, pred)
+    bleu, charbleu = compute_BLEU(target_text, transcribed_translated_audio)
 
     # chrF
-    chrf = compute_chrf(outputs, pred)
+    chrf = compute_chrf(target_text, transcribed_translated_audio)
 
     # MCD
-    mcd = compute_MCD(outputs_files, predictions_files)
+    mcd = compute_MCD(target_audio, translated_audio)
 
     return bleu, charbleu, chrf, mcd
 
@@ -64,11 +64,9 @@ def compute_chrf(outputs, predictions):
 
 
 # Metrics on audios
-def compute_MCD(outputs, predictions):
-    # Load audios
+def compute_MCD(original_audio, synthesized_audio):
+    # Model's sr
     sr = 16000
-    original_audio, _ = librosa.load(outputs, sr=sr)
-    synthesized_audio, _ = librosa.load(predictions, sr=sr)
 
     # Extract MFCC features
     original_mfcc = librosa.feature.mfcc(y = original_audio, sr=sr)
