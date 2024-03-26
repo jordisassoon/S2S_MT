@@ -12,6 +12,8 @@ from utils.save import save_batch
 from tqdm import tqdm
 import librosa
 
+from token_hf import token
+
 
 def sample_audio(audio):
     speech_array, _ = librosa.load(audio["file"], sr=16000) # model's sampling rate
@@ -58,9 +60,18 @@ def process_batches(dataset, sampling_rate, S2T, MT, T2S, args, batch_size=2):
 
 
 def main(args):
-    dataset = load_dataset(
+    cvss = load_dataset(
         "google/cvss", "cvss_c", languages=["fr"], split="validation", trust_remote_code=True
     )
+    
+    common_voice = load_dataset(
+        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, streaming=True, token = token
+    )
+
+    print(cvss)
+    print(common_voice)
+    print(cvss[0])
+    print(next(iter(common_voice)))
 
     # TODO:
     # Add more models!
