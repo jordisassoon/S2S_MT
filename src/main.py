@@ -30,9 +30,9 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     )
     
     # Target, French
-    common_voice = load_dataset(
-        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/data/kchardon-22/datasets'
-    )
+    # common_voice = load_dataset(
+    #     "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/data/kchardon-22/datasets'
+    # )
     max_size = args.max_size
     if max_size is None or max_size > len(cvss) :
         max_size = len(cvss)
@@ -54,15 +54,15 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
 
     for b, i in tqdm(enumerate(range(0, max_size, batch_size))):
         cvss_batch = [cvss[index] for index in range(i, i + batch_size)]
-        cv_batch = [common_voice[index] for index in range(i, i + batch_size)]
+        # cv_batch = [common_voice[index] for index in range(i, i + batch_size)]
         
         # Source, English
         source_audio = [sample_audio(source) for source in cvss_batch]
         source_text = [source['text'] for source in cvss_batch]
 
         # Target, French
-        target_audio = [sample_audio(target) for target in cv_batch]
-        target_text = [target['sentence'].lower() for target in cv_batch]
+        # target_audio = [sample_audio(target) for target in cv_batch]
+        # target_text = [target['sentence'].lower() for target in cv_batch]
 
         # Speech to text
         extracted_text = S2T(source_audio, sampling_rate)
@@ -78,38 +78,38 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         translated_audio = T2S(translated_text).detach().cpu().numpy()
 
         # Save audio translations
-        save_batch(out_dir=args.out_dir, out_name=[source['id'] for source in cvss_batch], rate=sampling_rate, data=translated_audio)
-
-        # Compute all the metrics for translated_audio
-        bleu, charbleu, chrf, mcd = compute_metrics(
-            target_text, target_audio, translated_audio, args.device
-        )
-
-        '''
-        print("Batch", b)
-        print("BLEU score :", bleu)
-        print("charBLEU score :", charbleu)
-        print("chrF score :", chrf)
-        print("mcd score :", mcd)
-        '''
-
-        bleu_all += bleu
-        charbleu_all += charbleu
-        chrf_all += chrf
-        mcd_all += mcd
-
-        count += batch_size
-        break
-    
-    bleu_all /= count
-    charbleu_all /= count
-    chrf_all /= count
-    mcd_all /= count
-
-    print("BLEU score :", bleu)
-    print("charBLEU score :", charbleu)
-    print("chrF score :", chrf)
-    print("mcd score :", mcd)
+    #     save_batch(out_dir=args.out_dir, out_name=[source['id'] for source in cvss_batch], rate=sampling_rate, data=translated_audio)
+    #
+    #     # Compute all the metrics for translated_audio
+    #     bleu, charbleu, chrf, mcd = compute_metrics(
+    #         target_text, target_audio, translated_audio, args.device
+    #     )
+    #
+    #     '''
+    #     print("Batch", b)
+    #     print("BLEU score :", bleu)
+    #     print("charBLEU score :", charbleu)
+    #     print("chrF score :", chrf)
+    #     print("mcd score :", mcd)
+    #     '''
+    #
+    #     bleu_all += bleu
+    #     charbleu_all += charbleu
+    #     chrf_all += chrf
+    #     mcd_all += mcd
+    #
+    #     count += batch_size
+    #     break
+    #
+    # bleu_all /= count
+    # charbleu_all /= count
+    # chrf_all /= count
+    # mcd_all /= count
+    #
+    # print("BLEU score :", bleu)
+    # print("charBLEU score :", charbleu)
+    # print("chrF score :", chrf)
+    # print("mcd score :", mcd)
 
 
 def main(args):
@@ -133,15 +133,21 @@ def main(args):
             src_lang=args.src_lan,
             tgt_lan=args.tgt_lan,
         )
-    elif args.mt_model == "hel":
+    elif args.mt_model == "hel" and args.src_lan == "fr":
         machine_translation = AutoMT(
             model="Helsinki-NLP/opus-mt-en-fr", device=args.device
+        )
+    elif args.mt_model == "hel" and args.src_lan == "lv":
+        machine_translation = AutoMT(
+            model="Helsinki-NLP/opus-mt-tc-big-en-lv", device=args.device
         )
     else:
         machine_translation = None
 
-    if args.tts_model == "fb-tts-fra":
+    if args.tts_model == "fb-tts" and args.src_lan == "fr":
         text_to_speech = VITS(model="facebook/mms-tts-fra", device=args.device)
+    elif args.tts_model == "fb-tts" and args.src_lan == "lv":
+        text_to_speech = VITS(model="facebook/mms-tts-lav", device=args.device)
     else:
         text_to_speech = None
 
