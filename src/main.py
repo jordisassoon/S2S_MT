@@ -97,7 +97,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         print('Translation charbleu :', charbleu)
 
         # Text to speech
-        translated_audio = T2S(translated_text).detach().cpu().numpy()
+        translated_audio = [audio.detach().cpu().numpy() for audio in T2S(translated_text)]
 
         # Save audio translations
         save_batch(out_dir=args.out_dir, out_name=[source['id'] for source in cvss_batch], rate=sampling_rate, batch=translated_audio)
