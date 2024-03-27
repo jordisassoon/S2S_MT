@@ -10,3 +10,4 @@ dtw
 numpy
 SentencePiece
 sacrebleu
+pandas
