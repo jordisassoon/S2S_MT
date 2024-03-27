@@ -58,11 +58,17 @@ For the dataset, since we use metrics based on the translated audios and the tra
 
 The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. The translation speech in English is synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
 
-We had to combine the CVSS and the Common Voice datasets, by joining them on the file names, to get the whole speech to speech corpus. Both of them are available on Hugging Face with the same structure, but we didn't have enough space to load both datasets. To overcome this problem, we decided to download CVSS and iterate through Common Voice thanks to the hugging face's 'streaming' parameter. 
+We had to combine the CVSS and the Common Voice datasets, by joining them on the file names, to get the whole speech to speech corpus. Both of them are available on Hugging Face with the same structure, but we didn't have enough space to load both datasets. To overcome this problem, we decided to download CVSS and iterate through Common Voice thanks to the hugging face's 'streaming' parameter.
+
+print(len(cvss)) = 14759
+print(len(common_voice)) = 14760
 
 - load CVSS as a Dataset with hugging face
 - load Common Voice as an Iterable Dataset (in streaming mode) with hugging face
 - to run the model : Iterate through Common Voice (so we have batches of 1) and save the data in a tensor. Find the source audio in CVSS and save it in a tensor. Run the model on the batch and print the scores. Save the scores in a list. Redo until end of the dataset. Average the scores.
+
+-> the streaming kept disconnecting so we had to find another way : download the second dataset in another part of the server. We can use it directly without streaming and with batches
+
 
 -> organization and analysis ?
 
