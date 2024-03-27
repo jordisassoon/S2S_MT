@@ -2,6 +2,7 @@ import argparse
 from datasets import load_dataset
 
 from models.STT.GenericSTT import GenericSTT
+from models.STT.WhisperSTT import WhisperSTT
 from models.MT.M2M100 import M2M100
 from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
@@ -34,7 +35,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/nvme/kchardon-22/datasets'
     )
     max_size = args.max_size
-    if max_size is None or max_size > len(cvss) :
+    if max_size is None or max_size > len(cvss):
         max_size = len(cvss)
 
     if max_size < batch_size:
@@ -137,6 +138,10 @@ def main(args):
         speech_to_text = GenericSTT(
             model="facebook/s2t-small-librispeech-asr", device=args.device
         )
+    elif args.stt_model == "whisper-small":
+        speech_to_text = WhisperSTT(
+            model="openai/whisper-small", device=args.device
+        )
     else:
         speech_to_text = None
 
@@ -147,15 +152,21 @@ def main(args):
             src_lang=args.src_lan,
             tgt_lan=args.tgt_lan,
         )
-    elif args.mt_model == "hel":
+    elif args.mt_model == "hel" and args.tgt_lan == "fr":
         machine_translation = AutoMT(
             model="Helsinki-NLP/opus-mt-en-fr", device=args.device
+        )
+    elif args.mt_model == "hel" and args.tgt_lan == "lv":
+        machine_translation = AutoMT(
+            model="Helsinki-NLP/opus-mt-tc-big-en-lv", device=args.device
         )
     else:
         machine_translation = None
 
-    if args.tts_model == "fb-tts-fra":
+    if args.tts_model == "fb-tts" and args.tgt_lan == "fr":
         text_to_speech = VITS(model="facebook/mms-tts-fra", device=args.device)
+    elif args.tts_model == "fb-tts" and args.tgt_lan == "lv":
+        text_to_speech = VITS(model="facebook/mms-tts-lav", device=args.device)
     else:
         text_to_speech = None
 
