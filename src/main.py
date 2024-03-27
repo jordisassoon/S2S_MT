@@ -59,6 +59,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     mcd_all = []
 
     for b, i in tqdm(enumerate(range(0, max_size, batch_size))):
+        print("Batch", b)
         cvss_batch = [cvss[index] for index in range(i, i + batch_size)]
         cv_batch = [common_voice[index] for index in range(i, i + batch_size)]
         
@@ -80,16 +81,20 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         # Metrics on text between source_text and extracted_text
         bleu, charbleu, _ = compute_all_text_metrics(source_text, extracted_text)
         extracted_text_all.extend(extracted_text)
-        S2T_bleu.extend(bleu)
-        S2T_charbleu.extend(charbleu)
+        S2T_bleu.append(bleu)
+        S2T_charbleu.append(charbleu)
+        print('Extraction bleu :', bleu)
+        print('Extraction charbleu :', charbleu)
 
         # Machine translation
         translated_text = MT(extracted_text)
         # Metrics on text between translated_text and target_text
         bleu, charbleu, _ = compute_all_text_metrics(target_text, translated_text)
         translated_text_all.extend(translated_text)
-        MT_bleu.extend(bleu)
-        MT_charbleu.extend(charbleu)
+        MT_bleu.append(bleu)
+        MT_charbleu.append(charbleu)
+        print('Translation bleu :', bleu)
+        print('Translation charbleu :', charbleu)
 
         # Text to speech
         translated_audio = T2S(translated_text).detach().cpu().numpy()
@@ -101,33 +106,40 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         bleu, charbleu, chrf, mcd, transcribed_target = compute_metrics(
             target_text, target_audio, translated_audio, args.device
         )
-        transcribed_target_all.extend(transcribed_target)
-        bleu_all.extend(bleu)
-        charbleu_all.extend(charbleu)
-        chrf_all.extend(chrf)
-        mcd_all.extend(mcd)
 
-        print("Batch", b)
         print("BLEU score :", bleu)
         print("charBLEU score :", charbleu)
         print("chrF score :", chrf)
         print("mcd score :", mcd)
 
+        transcribed_target_all.extend(transcribed_target)
+        bleu_all.append(bleu)
+        charbleu_all.append(charbleu)
+        chrf_all.append(chrf)
+        mcd_all.append(mcd)
+
 
         break
+    
+    print("TOTAL :")
+    print("BLEU score :", np.mean(bleu_all * batch_size))
+    print("charBLEU score :", np.mean(charbleu_all * batch_size))
+    print("chrF score :", np.mean(chrf_all * batch_size))
+    print("mcd score :", np.mean(mcd_all * batch_size))
 
-    print("BLEU score :", np.mean(bleu_all))
-    print("charBLEU score :", np.mean(charbleu_all))
-    print("chrF score :", np.mean(chrf_all))
-    print("mcd score :", np.mean(mcd_all))
+    print('Extraction bleu :', np.mean(S2T_bleu * batch_size))
+    print('Extraction charbleu :', np.mean(charbleu * batch_size))
 
-    columns = {'file_name' : file_name_all,'source_text' : source_text_all,'extracted_text' : extracted_text_all, 'S2T_BLEU' : S2T_bleu, 'S2T_CHARBLEU' : S2T_charbleu, 'target_text' : target_text_all, 'translated_text' : translated_text_all, 'MT_BLEU' : MT_bleu, 'MT_CHARBLEU' : MT_charbleu}
+    print('Translation bleu :', np.mean(MT_bleu * batch_size))
+    print('Translation charbleu :', np.mean(MT_charbleu * batch_size))
+
+    columns = {'file_name' : file_name_all,'source_text' : source_text_all,'extracted_text' : extracted_text_all, 'target_text' : target_text_all, 'translated_text' : translated_text_all}
     steps_scores = pd.DataFrame(columns)
-    steps_scores.to_csv(args.out_dir+'/'+'steps_scores.csv')
+    steps_scores.to_csv(args.out_dir+'/'+'steps_outputs.csv')
 
-    columns = {'file_name' : file_name_all,'source_text' : source_text_all, 'target_text' : target_text_all, 'transcribed_target' : transcribed_target_all, 'bleu' : bleu_all, 'charbleu' : charbleu_all, 'chrf' : chrf_all, 'mcd' : mcd_all}
+    columns = {'file_name' : file_name_all,'source_text' : source_text_all, 'target_text' : target_text_all, 'transcribed_target' : transcribed_target_all}
     s2s_scores = pd.DataFrame(columns)
-    s2s_scores.to_csv(args.out_dir+'/'+'s2s_scores.csv')
+    s2s_scores.to_csv(args.out_dir+'/'+'s2s_outputs.csv')
 
 
 
