@@ -22,11 +22,8 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
             translated_audio, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
         )["text"]]
 
-    # BLEU and charBLEU scores
-    bleu, charbleu = compute_BLEU(target_text, transcribed_translated_audio)
-
-    # chrF
-    chrf = compute_chrf(target_text, transcribed_translated_audio)
+    # BLEU, charBLEU, chrF
+    bleu, charbleu, chrf = compute_all_text_metrics(target_text, transcribed_translated_audio)
 
     # MCD
     mcd = compute_MCD(target_audio, translated_audio)
@@ -35,6 +32,15 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
 
 
 # Metrics on transcripts
+def compute_all_text_metrics(target_text, transcribed_translated_audio):
+    # BLEU and charBLEU scores
+    bleu, charbleu = compute_BLEU(target_text, transcribed_translated_audio)
+
+    # chrF
+    chrf = compute_chrf(target_text, transcribed_translated_audio)
+
+    return bleu, charbleu, chrf
+
 def compute_BLEU(outputs, predictions):
     # Computes BLEU and charBLEU
     sacrebleu = evaluate.load("sacrebleu")
