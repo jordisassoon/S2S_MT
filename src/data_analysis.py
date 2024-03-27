@@ -1,34 +1,34 @@
 import argparse
-
-""" TODO:
-Step 1: Basic info (audio length, audio variance, sentence length, vocab size, etc)
-Step 2: Recognizing useless info (noise, jargon)
-Step 3: Preprocess the audios if possible, or add preprocessing steps in the pipeline before translation
-"""
+import pandas as pd
+import numpy as np
 
 
-def audio_length_dist():
-    return NotImplementedError
+def load_data():
+    return pd.read_csv("data_analysis.py")
 
 
-def sentence_length_dist():
-    return NotImplementedError
+def sentence_length_dist(data):
+    source = data["source"]
+    target = data["target"]
+    source_sentence_lengths = [len(x) for x in source]
+    target_sentence_lengths = [len(x) for x in target]
+    return source_sentence_lengths, target_sentence_lengths
 
 
-def audio_variance():
-    return NotImplementedError
-
-
-def eval_noise():
-    return NotImplementedError
+def vocab_size(data):
+    source = data["source"]
+    target = data["target"]
+    source_dict = set()
+    target_dict = set()
+    [[source_dict.add(y) for y in x.split(" ")] for x in source]
+    [[target_dict.add(y) for y in x.split(" ")] for x in target]
+    return source_dict, target_dict
 
 
 def main(args):
-    audio_length_dist()
-    sentence_length_dist()
-    audio_variance()
-    eval_noise()
-
+    data = load_data()
+    sentence_length_dist(data)
+    vocab_size(data)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and predict")
