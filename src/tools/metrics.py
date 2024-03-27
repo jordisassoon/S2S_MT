@@ -18,9 +18,9 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
         device=device,
     )
     # For now we translate from english to french
-    transcribed_translated_audio = [pip(
+    transcribed_translated_audio = [item['text'] for item in pip(
             translated_audio, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
-        )["text"]]
+        )]
 
     # BLEU, charBLEU, chrF
     bleu, charbleu, chrf = compute_all_text_metrics(target_text, transcribed_translated_audio)
