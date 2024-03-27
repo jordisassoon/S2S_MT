@@ -23,7 +23,7 @@ def sample_audio(audio):
     return speech_array
 
 
-def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
+def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=50):
     # Load datasets
     # Source, English
     cvss = load_dataset(
@@ -117,9 +117,6 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         charbleu_all.append(charbleu)
         chrf_all.append(chrf)
         mcd_all.append(mcd)
-
-
-        break
     
     print("TOTAL :")
     print("BLEU score :", np.mean(bleu_all * batch_size))
