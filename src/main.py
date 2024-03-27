@@ -6,7 +6,7 @@ from models.MT.M2M100 import M2M100
 from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
 
-from utils.metrics import compute_metrics
+from utils.metrics import compute_metrics, compute_all_text_metrics
 from utils.save import save_wav
 
 from tqdm import tqdm
@@ -46,7 +46,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
 
     target = iter(common_voice)
     count = 0
-    for b in tqdm(range(len(cvss))):
+    for b in tqdm(range(2000)):
         # Iterate through Common Voice
         s = next(target, 'END')
         if s == 'END':
@@ -61,17 +61,21 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
 
         # Speech to text
         extracted_text = S2T(source_audio, sampling_rate)
+        # Metrics on text between source_text and extracted_text
+        # bleu, charbleu, chrf = compute_all_text_metrics(source_text, extracted_text)
 
         # Machine translation
         translated_text = MT(extracted_text)
+        # Metrics on text between translated_text and target_text
+        # bleu, charbleu, chrf = compute_all_text_metrics(target_text, translated_text)
 
         # Text to speech
         translated_audio = T2S(translated_text).detach().cpu().numpy()[0]
 
-        # TODO:
         # Save audio translations
         save_wav(out_dir=args.out_dir, out_name=s['audio']['path'][6:], rate=sampling_rate, data=translated_audio)
-        # Compute metrics of the batch
+
+        # Compute all the metrics for translated_audio
         bleu, charbleu, chrf, mcd = compute_metrics(
             target_text, target_audio, translated_audio, args.device
         )
@@ -90,15 +94,12 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         mcd_all += mcd
 
         count += 1
-        if b == 5:
-            break
     
     bleu_all /= count
     charbleu_all /= count
     chrf_all /= count
     mcd_all /= count
 
-    print("Batch", b)
     print("BLEU score :", bleu)
     print("charBLEU score :", charbleu)
     print("chrF score :", chrf)
