@@ -28,7 +28,7 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
     # MCD
     mcd = compute_MCD(target_audio, translated_audio)
 
-    return bleu, charbleu, chrf, mcd
+    return bleu, charbleu, chrf, mcd, transcribed_translated_audio
 
 
 # Metrics on transcripts

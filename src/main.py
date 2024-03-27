@@ -6,12 +6,13 @@ from models.MT.M2M100 import M2M100
 from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
 
-from utils.metrics import compute_metrics, compute_all_text_metrics
-from utils.save import save_batch
+from tools.metrics import compute_metrics, compute_all_text_metrics
+from tools.save import save_batch
 
 from tqdm import tqdm
 import librosa
 import pandas as pd
+import numpy as np
 
 from token_hf import token
 
@@ -30,7 +31,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     
     # Target, French
     common_voice = load_dataset(
-        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/data/kchardon-22/datasets'
+        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/nvme/kchardon-22/datasets'
     )
     max_size = args.max_size
     if max_size is None or max_size > len(cvss) :
@@ -39,17 +40,22 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     if max_size < batch_size:
         batch_size = max_size
 
-    # Scores over all the samples
-    bleu_all = 0
-    charbleu_all = 0
-    chrf_all = 0
-    mcd_all = 0
+    # Get all the scores and outputs
+    file_name_all = []
+    source_text_all = []
+    extracted_text_all = []
+    S2T_bleu = []
+    S2T_charbleu= []
+    target_text_all = []
+    translated_text_all = []
+    MT_bleu = []
+    MT_charbleu = []
 
-    columns = ['file_name','source_text','extracted_text', 'S2T_BLEU', 'S2T_CHARBLEU', 'target_text', 'translated_text', 'MT_BLEU', 'MT_CHARBLEU']
-    steps_scores = pd.DataFrame(columns=columns)
-
-    columns = ['file_name', 'target_text', 'transcribed_target', 'bleu', 'charbleu', 'chrf', 'mcd']
-    s2s_scores = pd.DataFrame(columns=columns)
+    transcribed_target_all = []
+    bleu_all = []
+    charbleu_all = []
+    chrf_all = []
+    mcd_all = []
 
     for b, i in tqdm(enumerate(range(0, max_size, batch_size))):
         cvss_batch = [cvss[index] for index in range(i, i + batch_size)]
@@ -63,52 +69,65 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         target_audio = [sample_audio(target) for target in cv_batch]
         target_text = [target['sentence'].lower() for target in cv_batch]
 
+        # Save
+        file_name_all.extend([source['id'] for source in cvss_batch])
+        source_text_all.extend(source_text)
+        target_text_all.extend(target_text)
+
         # Speech to text
         extracted_text = S2T(source_audio, sampling_rate)
         # Metrics on text between source_text and extracted_text
-        # bleu, charbleu, _ = compute_all_text_metrics(source_text, extracted_text)
+        bleu, charbleu, _ = compute_all_text_metrics(source_text, extracted_text)
+        extracted_text_all.extend(extracted_text)
+        S2T_bleu.extend(bleu)
+        S2T_charbleu.extend(charbleu)
 
         # Machine translation
         translated_text = MT(extracted_text)
         # Metrics on text between translated_text and target_text
-        # bleu, charbleu, _ = compute_all_text_metrics(target_text, translated_text)
+        bleu, charbleu, _ = compute_all_text_metrics(target_text, translated_text)
+        translated_text_all.extend(translated_text)
+        MT_bleu.extend(bleu)
+        MT_charbleu.extend(charbleu)
 
         # Text to speech
         translated_audio = T2S(translated_text).detach().cpu().numpy()
 
         # Save audio translations
-        save_batch(out_dir=args.out_dir, out_name=[source['id'] for source in cvss_batch], rate=sampling_rate, data=translated_audio)
+        save_batch(out_dir=args.out_dir, out_name=[source['id'] for source in cvss_batch], rate=sampling_rate, batch=translated_audio)
 
         # Compute all the metrics for translated_audio
-        bleu, charbleu, chrf, mcd = compute_metrics(
+        bleu, charbleu, chrf, mcd, transcribed_target = compute_metrics(
             target_text, target_audio, translated_audio, args.device
         )
+        transcribed_target_all.extend(transcribed_target)
+        bleu_all.extend(bleu)
+        charbleu_all.extend(charbleu)
+        chrf_all.extend(chrf)
+        mcd_all.extend(mcd)
 
-        '''
         print("Batch", b)
         print("BLEU score :", bleu)
         print("charBLEU score :", charbleu)
         print("chrF score :", chrf)
         print("mcd score :", mcd)
-        '''
 
-        bleu_all += bleu
-        charbleu_all += charbleu
-        chrf_all += chrf
-        mcd_all += mcd
 
-        count += batch_size
         break
-    
-    bleu_all /= count
-    charbleu_all /= count
-    chrf_all /= count
-    mcd_all /= count
 
-    print("BLEU score :", bleu)
-    print("charBLEU score :", charbleu)
-    print("chrF score :", chrf)
-    print("mcd score :", mcd)
+    print("BLEU score :", np.mean(bleu_all))
+    print("charBLEU score :", np.mean(charbleu_all))
+    print("chrF score :", np.mean(chrf_all))
+    print("mcd score :", np.mean(mcd_all))
+
+    columns = {'file_name' : file_name_all,'source_text' : source_text_all,'extracted_text' : extracted_text_all, 'S2T_BLEU' : S2T_bleu, 'S2T_CHARBLEU' : S2T_charbleu, 'target_text' : target_text_all, 'translated_text' : translated_text_all, 'MT_BLEU' : MT_bleu, 'MT_CHARBLEU' : MT_charbleu}
+    steps_scores = pd.DataFrame(columns)
+    steps_scores.to_csv(args.out_dir+'/'+'steps_scores.csv')
+
+    columns = {'file_name' : file_name_all,'source_text' : source_text_all, 'target_text' : target_text_all, 'transcribed_target' : transcribed_target_all, 'bleu' : bleu_all, 'charbleu' : charbleu_all, 'chrf' : chrf_all, 'mcd' : mcd_all}
+    s2s_scores = pd.DataFrame(columns)
+    s2s_scores.to_csv(args.out_dir+'/'+'s2s_scores.csv')
+
 
 
 def main(args):
