@@ -2,6 +2,7 @@ import argparse
 from datasets import load_dataset
 
 from models.STT.GenericSTT import GenericSTT
+from models.STT.WhisperSTT import WhisperSTT
 from models.MT.M2M100 import M2M100
 from models.MT.AutoMT import AutoMT
 from models.TTS.VITS import VITS
@@ -117,6 +118,10 @@ def main(args):
     if args.stt_model == "fb-s2t-small":
         speech_to_text = GenericSTT(
             model="facebook/s2t-small-librispeech-asr", device=args.device
+        )
+    elif args.stt_model == "whisper-small":
+        speech_to_text = WhisperSTT(
+            model="openai/whisper-small", device=args.device
         )
     else:
         speech_to_text = None
