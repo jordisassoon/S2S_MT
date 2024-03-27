@@ -46,7 +46,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
 
     target = iter(common_voice)
     count = 0
-    for b in tqdm(range(2000)):
+    for b in tqdm(range(400)):
         # Iterate through Common Voice
         s = next(target, 'END')
         if s == 'END':
