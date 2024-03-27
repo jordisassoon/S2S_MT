@@ -15,6 +15,7 @@ common_voice = load_dataset(
 
 
 source_text = [source['text'] for source in cvss]
+source_text.append("")
 
 target_text = [target['sentence'].lower() for target in common_voice]
 
