@@ -12,5 +12,5 @@ class VITS(nn.Module):
 
     def forward(self, inputs):
         input_features = self.tokenizer(inputs, return_tensors="pt", padding=True).to(self.device)
-        output = self.model(**input_features).waveform
+        output = self.model(**input_features).waveform.to(self.device)
         return output

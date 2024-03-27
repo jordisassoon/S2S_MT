@@ -12,7 +12,7 @@ class AutoMT(nn.Module):
 
     def forward(self, inputs):
         model_inputs = self.tokenizer(inputs, return_tensors="pt", padding=True).to(self.device)
-        generated_tokens = self.model.generate(**model_inputs)
+        generated_tokens = self.model.generate(**model_inputs).to(self.device)
         translations = self.tokenizer.batch_decode(
             generated_tokens, skip_special_tokens=True
         )

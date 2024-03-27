@@ -15,7 +15,7 @@ class M2M100(nn.Module):
         model_inputs = self.tokenizer(inputs, return_tensors="pt").to(self.device)
         generated_tokens = self.model.generate(
             **model_inputs, forced_bos_token_id=self.tokenizer.get_lang_id(self.tgt_lan)
-        )
+        ).to(self.device)
         translations = self.tokenizer.batch_decode(
             generated_tokens, skip_special_tokens=True
         )
