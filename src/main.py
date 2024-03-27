@@ -38,8 +38,11 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     if len(cvss) < batch_size:
         batch_size = len(cvss)
 
-    # TODO:
-    # Scores over all the instances
+    # Scores over all the samples
+    bleu_all = 0
+    charbleu_all = 0
+    chrf_all = 0
+    mcd_all = 0
 
     target = iter(common_voice)
     count = 0
@@ -73,14 +76,33 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
             target_text, target_audio, translated_audio, args.device
         )
 
+        '''
         print("Batch", b)
         print("BLEU score :", bleu)
         print("charBLEU score :", charbleu)
         print("chrF score :", chrf)
         print("mcd score :", mcd)
+        '''
+
+        bleu_all += bleu
+        charbleu_all += charbleu
+        chrf_all += chrf
+        mcd_all += mcd
 
         count += 1
-        break
+        if b == 5:
+            break
+    
+    bleu_all /= count
+    charbleu_all /= count
+    chrf_all /= count
+    mcd_all /= count
+
+    print("Batch", b)
+    print("BLEU score :", bleu)
+    print("charBLEU score :", charbleu)
+    print("chrF score :", chrf)
+    print("mcd score :", mcd)
 
 
 def main(args):
