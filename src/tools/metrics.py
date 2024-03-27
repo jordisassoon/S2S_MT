@@ -17,9 +17,9 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
         tokenizer="openai/whisper-base",
         device=device,
     )
-    # For now we translate from english to french
+    # For now we translate from english to latvian
     transcribed_translated_audio = [item['text'] for item in pip(
-            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|fr|>"}
+            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|lv|>"}
         )]
 
     # BLEU, charBLEU, chrF

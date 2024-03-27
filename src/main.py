@@ -23,7 +23,7 @@ def sample_audio(audio):
     return speech_array
 
 
-def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=50):
+def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     # Load datasets
     # Source, English
     cvss = load_dataset(
