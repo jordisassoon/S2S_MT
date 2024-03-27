@@ -26,9 +26,11 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
     bleu, charbleu, chrf = compute_all_text_metrics(target_text, transcribed_translated_audio)
 
     # MCD
-    mcd = compute_MCD(target_audio, translated_audio)
+    mcd = 0
+    for i in range(len(target_audio)):
+        mcd += compute_MCD(np.array(target_audio[i]), translated_audio[i])
 
-    return bleu, charbleu, chrf, mcd, transcribed_translated_audio
+    return bleu, charbleu, chrf, mcd/len(target_audio), transcribed_translated_audio
 
 
 # Metrics on transcripts
