@@ -27,12 +27,12 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
     # Load datasets
     # Source, English
     cvss = load_dataset(
-        "google/cvss", "cvss_c", languages=["fr"], split="validation", trust_remote_code=True
+        "google/cvss", "cvss_c", languages=[args.tgt_lan], split="validation", trust_remote_code=True
     )
     
     # Target, French
     common_voice = load_dataset(
-        "mozilla-foundation/common_voice_4_0", "fr", split="validation", trust_remote_code=True, token=token, cache_dir='/nvme/kchardon-22/datasets'
+        "mozilla-foundation/common_voice_4_0", args.tgt_lan, split="validation", trust_remote_code=True, token=token, cache_dir='/nvme/kchardon-22/datasets'
     )
     max_size = args.max_size
     if max_size is None or max_size > len(cvss):
@@ -67,7 +67,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
         source_audio = [sample_audio(source) for source in cvss_batch]
         source_text = [source['text'] for source in cvss_batch]
 
-        # Target, French
+        # Target
         target_audio = [sample_audio(target) for target in cv_batch]
         target_text = [target['sentence'].lower() for target in cv_batch]
 
@@ -104,7 +104,7 @@ def process_batches(S2T, MT, T2S, sampling_rate, args, batch_size=5):
 
         # Compute all the metrics for translated_audio
         bleu, charbleu, chrf, mcd, transcribed_target = compute_metrics(
-            target_text, target_audio, translated_audio, args.device
+            target_text, target_audio, translated_audio, args.device, args.tgt_lan
         )
 
         print("BLEU score :", bleu)

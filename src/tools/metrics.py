@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Utility functions
-def compute_metrics(target_text, target_audio, translated_audio, device):
+def compute_metrics(target_text, target_audio, translated_audio, device, tgt_lan):
     # Compute all the metrics based on the outputs and the predicted outputs
 
     # Returns transcripts of predicted outputs
@@ -17,9 +17,9 @@ def compute_metrics(target_text, target_audio, translated_audio, device):
         tokenizer="openai/whisper-base",
         device=device,
     )
-    # For now we translate from english to latvian
+    # We translate from english to another language
     transcribed_translated_audio = [item['text'] for item in pip(
-            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|lv|>"}
+            translated_audio, generate_kwargs={"task": "transcribe", "language": "<|"+tgt_lan+"|>"}
         )]
 
     # BLEU, charBLEU, chrF
