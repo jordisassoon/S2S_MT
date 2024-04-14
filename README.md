@@ -1,7 +1,7 @@
 # S2S_MT
 
-This repository contains the code referring to our project of Speech-to-Speech translation (S2S) for TPT-...
-The README contains information on how to run the code, and general descriptions of the methods and datasets we used, and the results we got.
+This repository contains the code referring to our project of Speech-to-Speech translation (S2S) for TPT-IA327
+The README contains information on how to run the code, general descriptions of the methods and datasets we used and the results we got.
 
 ## Requirements
 
@@ -38,12 +38,6 @@ python main.py \
     --out_dir=out
 ```
 
-## Other stuff
-
-we can try STT + MT + TTS  and just STTT + TTS  (recently some papers focused on S2S without an intermediate passage to text)
-
-maybe we can try on one "common" language and one "rare" (with less data available) and compare the results
-
 ## Models
 
 which models we used/tried (why?)
@@ -54,38 +48,27 @@ list of model names:
 
 ## Dataset
 
-For the dataset, since we use metrics based on the translated audios and the transcriptions of the translations (see next section), we had to use a dataset with audios in different languages (input and translation) and the transcriptions. We found the Common Voicebased Speech-to-Speech (CVSS) translation corpus [1] which is a massively multilingual-to-English speech-to-speech translation corpus, covering sentence-level parallel speech-to-speech translation pairs from 21 languages into English. It also contains  normalized translation text matching the pronunciation in the translation speech.
+For the dataset, since we use metrics based on the translated audios and the transcriptions of the translations (see next section), we had to use a dataset with audios in different languages (input and translation) and the transcriptions. We found the Common Voice-based Speech-to-Speech (CVSS) translation corpus [1] which is a massively multilingual-to-English speech-to-speech translation corpus, covering sentence-level parallel speech-to-speech translation pairs from 21 languages into English. It also contains normalized translation text matching the pronunciation in the translation speech.
 
-The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totalling 1153 hours. The translation speech in English is synthesized using state-of-the-art TTS systems. All the translation speech is in a single canonical speaker’s voice, totalling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
+The source speech in the 21 source languages is crowd-sourced human volunteer recordings from the Common Voice project [5], totaling 1153 hours. The translation speech in English is synthesized using state-of-the-art Text-to-Speech (TTS) systems. All the translation speech is in a single canonical speaker’s voice, totaling 719 hours. Despite being synthetic, the speech is highly natural, clean, and consistent in speaking style.
 
-We had to combine the CVSS and the Common Voice datasets, by joining them on the file names, to get the whole speech to speech corpus. Both of them are available on Hugging Face with the same structure, but we didn't have enough space to load both datasets. To overcome this problem, we decided to download CVSS and iterate through Common Voice thanks to the hugging face's 'streaming' parameter.
+We had to combine the CVSS and the Common Voice datasets, by joining them on the file names, to get the whole speech-to-speech corpus. Both of them are available on Hugging Face with the same structure and have 14759 samples.
 
-print(len(cvss)) = 14759
-print(len(common_voice)) = 14760
-
-- load CVSS as a Dataset with hugging face
-- load Common Voice as an Iterable Dataset (in streaming mode) with hugging face
-- to run the model : Iterate through Common Voice (so we have batches of 1) and save the data in a tensor. Find the source audio in CVSS and save it in a tensor. Run the model on the batch and print the scores. Save the scores in a list. Redo until end of the dataset. Average the scores.
-
--> the streaming kept disconnecting so we had to find another way : download the second dataset in another part of the server. We can use it directly without streaming and with batches
-
-
--> organization and analysis ?
-
+- Dataset Analysis
 
 ## Evaluation
 
-To evaluate the model, we used the metrics presented in [2]. Two types of metrics are presented; metrics based on a reference text (BLEU, charBLEU and chrF) and a metric based on a reference speech (MCD).
+Evaluation of S2S models is still a subject of research due to its difficulty and generally, it’s qualitatively assessed by humans. To evaluate the models, we used the metrics presented in [2]. Two types of metrics are presented; metrics based on a reference text (BLEU, charBLEU and chrF) and a metric based on a reference speech (MCD).
 
 ### Reference Text: ASR Transcription with MT Metrics
 
 From [2] :
 
-For applications combining translation with synthesis such as speech-to-speech (S2S) or text-to-speech translation (T2S), previous work has exclusively transcribed synthesized speech with ASR to evaluate with the text-based metric BLEU, in part due to the absence of datasets with parallel speech.
+For applications combining translation with synthesis such as S2S, previous work has exclusively transcribed synthesized speech with ASR to evaluate with the text-based metric BLEU, in part due to the absence of datasets with parallel speech.
 
 To evaluate synthesized speech translations with standard automatic MT metrics, previous work on neural speech-to-speech translation has utilized large ASR models trained on hundreds of hours of external corpora in the target language or commercial transcription services to transcribe synthesized samples for comparison against text references. The use of high-quality external models is to prevent the introduction of ASR errors which may impact the downstream MT metric.
 
-Previous work has evaluated using ASR and BLEU only and have experiments with high-resource languages with standardized orthographies only; however, language dialects often have non-standardized orthographies which we show disproportionately affect word-level metrics like BLEU. With this in mind, we also compare two character-level MT metrics. chrF computes F1-score of character n-grams, while character-level BLEU (charBLEU) computes BLEU on character rather than word sequences. We use SacreBLEU to calculate both BLEU and chrF scores.
+A lot of previous work has evaluated using ASR and BLEU only and has experimented with high-resource languages with standardized orthographies only; however, language dialects often have non-standardized orthographies which disproportionately affect word-level metrics like BLEU. With this in mind, we also compare two character-level MT metrics. chrF computes F1-score of character n-grams, while character-level BLEU (charBLEU) computes BLEU on character rather than word sequences. We use SacreBLEU to calculate both BLEU and chrF scores.
 
 ### Reference Speech: Mel-Cepstral Distortion (MCD)
 
@@ -95,7 +78,15 @@ Here is how to compute MCD between two audios $y$ and $\hat{y}$ [3, 4] :
 
 $$MCD(y, \hat{y}) = \frac{10}{\ln(10)} \cdot \frac{1}{N} \sum_{n=0}^{N-1} \sqrt{2 \sum_{t=1}^{T} ||y_{t,n} - \hat{y}_{t,n}||}$$
 
--> the voice, intonnation, lentgh... affect the results. Example : two translations (same intonation from the model) 264.38 dB and the real output (with my voice and intonation) with a translation 1039.26
+However, the voice, intonation, or length of the audio can affect the results. For example, we computed the MCD for two different translations, with the same voice and intonation generated by the model, and found an MCD of 264.38 dB. On the other hand, when comparing a translation from the model and the real output read with my voice and intonation, we get an MCD of 1039.26 dB. We can see that the difference is huge and that it can be complicated to compare different audios.
+
+### Experiments and Results
+
+Our experimental setup involved processing samples in batches and evaluating metrics at each stage of the pipeline, including S2T, MT, and the complete S2S process. To ensure comprehensive evaluation, we conducted experiments on two languages: French and Latvian. This selection encompassed both widely spoken (French, spoken by 300 million people) and less common (Latvian, spoken by 2 million people) languages. In both experiments, we translated from English to the target language, enabling a thorough assessment of model performance across diverse linguistic contexts.
+
+- french vs latvian
+
+### Error Analysis
 
 ## References
 
